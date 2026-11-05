@@ -1,80 +1,59 @@
 // api.js
 //
 // This file is the ONLY place that talks to the backend.
-// rooms.js / booking.js / my-bookings.js all call the functions below -
-// they never use fetch() directly. This keeps things organized and
-// makes Stage 3 (integration) simple: you only edit this one file.
+// rooms.js / booking.js / my-bookings.js call the functions below -
+// they never use fetch() directly.
 //
-// STAGE 1 (Frontend only, no backend yet):
-//   Leave this file as-is. The functions below return hardcoded
-//   "mock" data so you can build and style your pages first.
-//
-// STAGE 3 (Integration):
-//   Replace the body of each function with a real fetch() call to
-//   your Express server, started with "npm start" at http://localhost:3000.
-//   Examples are shown in the comments below each function.
+// Every function talks to the Express server at the same origin
+// (http://localhost:3000, started with "npm start").
 
-// ---------- Mock data used only in Stage 1 ----------
-const MOCK_ROOMS = [
-  {
-    id: "r1",
-    name: "Bayou City Room",
-    capacity: 12,
-    equipment: ["Projector", "Whiteboard", "Conference Phone"],
-    foodAllowed: true,
-  },
-  {
-    id: "r2",
-    name: "Cullen Room",
-    capacity: 8,
-    equipment: ["TV Screen", "Whiteboard"],
-    foodAllowed: false,
-  },
-];
+// Small helper: run fetch, parse the JSON, and throw an Error with the
+// server's message if the response wasn't successful (status 400, 404, 409...).
+async function request(url, options) {
+  const response = await fetch(url, options);
 
-let MOCK_BOOKINGS = [];
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (err) {
+    // response had no JSON body; leave data as null
+  }
+
+  if (!response.ok) {
+    const message = (data && data.error) || `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+  return data;
+}
 
 // ---------- Rooms ----------
 
 async function getRooms() {
-  // STAGE 1 (current):
-  return MOCK_ROOMS;
-
-  // STAGE 3: replace the line above with:
-  // const response = await fetch("/api/rooms");
-  // return await response.json();
+  return request("/api/rooms");
 }
 
 async function getRoomById(id) {
-  // STAGE 1 (current):
-  return MOCK_ROOMS.find((room) => room.id === id);
-
-  // STAGE 3: replace the two lines above with:
-  // const response = await fetch(`/api/rooms/${id}`);
-  // return await response.json();
+  return request(`/api/rooms/${encodeURIComponent(id)}`);
 }
 
 // ---------- Bookings ----------
 
 async function getBookings() {
-  // TODO (Stage 1): return MOCK_BOOKINGS
-  // TODO (Stage 3): fetch("/api/bookings") and return the parsed JSON
+  return request("/api/bookings");
 }
 
 async function createBooking(bookingData) {
   // bookingData looks like:
   // { roomId, clubName, date, startTime, endTime, purpose }
-
-  // TODO (Stage 1): push a new object (with a generated id) into
-  //   MOCK_BOOKINGS and return it.
-  // TODO (Stage 3): fetch("/api/bookings", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(bookingData),
-  // }) and return the parsed JSON.
+  return request("/api/bookings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(bookingData),
+  });
 }
 
 async function deleteBooking(id) {
-  // TODO (Stage 1): remove the matching booking from MOCK_BOOKINGS.
-  // TODO (Stage 3): fetch(`/api/bookings/${id}`, { method: "DELETE" }).
+  return request(`/api/bookings/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
 }

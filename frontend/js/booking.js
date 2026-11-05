@@ -1,33 +1,59 @@
 // booking.js
 //
 // Handles the "Book a Room" form on booking.html.
-// Use rooms.js as your reference for how to fetch data and build
-// HTML with template strings.
 
 async function populateRoomSelect() {
   const select = document.getElementById("room-select");
-
-  // TODO:
-  // 1. Call getRooms() from api.js
-  // 2. For each room, create an <option value="ROOM_ID">ROOM_NAME</option>
-  // 3. Append the options to `select`
-}
-
-function handleBookingSubmit(event) {
-  event.preventDefault();
-
   const statusEl = document.getElementById("form-status");
 
-  // TODO:
-  // 1. Read the form values (roomId, clubName, date, startTime, endTime, purpose)
-  //    Hint: use document.getElementById(...).value for each field
-  // 2. Build a bookingData object matching the shape described in api.js
-  // 3. Call createBooking(bookingData) from api.js
-  // 4. On success, show a message in statusEl (add class "success")
-  //    and consider resetting the form with event.target.reset()
-  // 5. On failure, show an error message in statusEl (add class "error")
+  try {
+    const rooms = await getRooms();
 
-  statusEl.textContent = "TODO: implement handleBookingSubmit()";
+    rooms.forEach((room) => {
+      const option = document.createElement("option");
+      option.value = room.id;
+      option.textContent = `${room.name} (up to ${room.capacity} people)`;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    statusEl.textContent = `Could not load rooms: ${error.message}`;
+    statusEl.className = "status-message error";
+  }
+}
+
+async function handleBookingSubmit(event) {
+  event.preventDefault();
+
+  const form = event.target;
+  const statusEl = document.getElementById("form-status");
+
+  // 1. Read the form values
+  const bookingData = {
+    roomId: document.getElementById("room-select").value,
+    clubName: document.getElementById("club-name").value.trim(),
+    date: document.getElementById("date").value,
+    startTime: document.getElementById("start-time").value,
+    endTime: document.getElementById("end-time").value,
+    purpose: document.getElementById("purpose").value.trim(),
+  };
+
+  // Simple client-side validation (the server checks again)
+  if (bookingData.endTime <= bookingData.startTime) {
+    statusEl.textContent = "End time must be after start time.";
+    statusEl.className = "status-message error";
+    return;
+  }
+
+  // 2. Send it to the backend
+  try {
+    await createBooking(bookingData);
+    statusEl.textContent = "Booking saved! You can see it on the My Bookings page.";
+    statusEl.className = "status-message success";
+    form.reset();
+  } catch (error) {
+    statusEl.textContent = `Could not save booking: ${error.message}`;
+    statusEl.className = "status-message error";
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {

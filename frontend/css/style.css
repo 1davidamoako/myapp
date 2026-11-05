@@ -171,3 +171,40 @@ form button:hover {
 .status-message.success {
   color: #1a7a31;
 }
+
+/* ---------- Bookings list extras ---------- */
+.booking-details h3 {
+  margin: 0 0 6px;
+  color: #c8102e;
+}
+
+.booking-details p {
+  margin: 2px 0;
+}
+
+.booking-item {
+  gap: 16px;
+}
+
+.empty-message {
+  background: #fff;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+@media (max-width: 600px) {
+  nav.navbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  nav.navbar .brand {
+    flex-basis: 100%;
+  }
+
+  .booking-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
